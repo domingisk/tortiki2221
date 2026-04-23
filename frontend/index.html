@@ -1,0 +1,331 @@
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>КондитерПРО</title>
+<link href="https://fonts.googleapis.com/css2?family=Cormorant+Garamond:wght@400;600;700&family=Jost:wght@300;400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+<div id="loader"><div class="spinner"></div></div>
+
+<div class="app">
+<!-- SIDEBAR -->
+<aside class="sidebar">
+  <div class="sb-logo">
+    <div class="sb-logo-icon">🎂</div>
+    <div class="sb-logo-title">КондитерПРО</div>
+    <div class="sb-logo-sub">Управление производством</div>
+  </div>
+  <div class="sb-user">
+    <div class="sb-avatar">👤</div>
+    <div><div class="sb-uname" id="sb-uname">—</div><div class="sb-urole" id="sb-urole">—</div></div>
+  </div>
+  <nav class="nav" id="nav-items"></nav>
+  <div class="sb-bottom">
+    <div class="sb-stats">
+      <div class="sb-stat"><div class="sb-stat-label">Сырьё</div><div class="sb-stat-val" id="stat-raw">—</div></div>
+      <div class="sb-stat"><div class="sb-stat-label">Упаковка</div><div class="sb-stat-val" id="stat-pkg">—</div></div>
+      <div class="sb-stat"><div class="sb-stat-label">Торты</div><div class="sb-stat-val" id="stat-prod">—</div></div>
+      <div class="sb-stat"><div class="sb-stat-label">Заявки</div><div class="sb-stat-val" id="stat-req">—</div></div>
+    </div>
+    <button class="btn-logout" id="logout-btn">Выйти из системы</button>
+  </div>
+</aside>
+
+<!-- MAIN -->
+<main class="main">
+  <header class="topbar">
+    <div class="page-title" id="topbar-title">Главная</div>
+    <div class="topbar-right">
+      <div class="search-bar"><span class="search-icon">🔍</span><input type="text" id="search-input" placeholder="Поиск..."></div>
+      <button class="btn btn-primary" id="add-btn" style="display:none">+ Добавить</button>
+    </div>
+  </header>
+  <div class="content">
+
+    <!-- DASHBOARD -->
+    <div class="page active" id="page-dashboard"><div id="dashboard-content"></div></div>
+
+    <!-- PRODUCTS -->
+    <div class="page" id="page-products"><div id="prod-cards" class="cards-grid"></div></div>
+
+    <!-- PLAN -->
+    <div class="page" id="page-plan">
+      <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:14px;flex-wrap:wrap;gap:10px">
+        <div class="tabs">
+          <div class="tab active" data-tab="all">Все</div>
+          <div class="tab" data-tab="today">Сегодня</div>
+          <div class="tab" data-tab="revision">Ревизия</div>
+        </div>
+        <div style="display:flex;gap:8px;align-items:center;flex-wrap:wrap">
+          <input type="date" id="plan-filter-date" style="width:150px" onchange="renderPlan()">
+          <button class="btn btn-secondary btn-sm" onclick="$('plan-filter-date').value='';renderPlan()">Сбросить</button>
+          <button class="btn btn-caramel btn-sm" onclick="openPlanModal()">+ Добавить план</button>
+        </div>
+      </div>
+      <div class="panel">
+        <div class="plan-row hdr"><div>Продукт</div><div>Дата</div><div>План</div><div>Факт</div><div>Остаток</div><div>%</div><div>Действия</div></div>
+        <div id="plan-body"></div>
+      </div>
+    </div>
+
+    <!-- RAW -->
+    <div class="page" id="page-raw"><div id="raw-cards" class="cards-grid"></div></div>
+
+    <!-- PKG -->
+    <div class="page" id="page-pkg"><div id="pkg-cards" class="cards-grid"></div></div>
+
+    <!-- REQUESTS -->
+    <div class="page" id="page-requests">
+      <div style="display:flex;justify-content:flex-end;margin-bottom:14px">
+        <button class="btn btn-primary" onclick="openRequestModal()">+ Создать заявку</button>
+      </div>
+      <div id="req-content"></div>
+    </div>
+
+    <!-- CALENDAR -->
+    <div class="page" id="page-calendar">
+      <div class="cal-header">
+        <div class="cal-nav">
+          <div class="cal-nav-btn" id="cal-prev">◀</div>
+          <div class="cal-month" id="cal-month"></div>
+          <div class="cal-nav-btn" id="cal-next">▶</div>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="cal-today">Сегодня</button>
+      </div>
+      <div class="cal-grid" id="cal-grid"></div>
+      <div class="events-panel">
+        <div class="events-header"><span class="events-title">Все записи</span><span class="events-title" id="events-count">0</span></div>
+        <div id="events-list"></div>
+      </div>
+    </div>
+
+    <!-- RBAC -->
+    <div class="page" id="page-rbac">
+      <div class="rbac-wrap">
+        <!-- Roles column -->
+        <div>
+          <div class="section-header">
+            <div class="section-title">🎭 Роли</div>
+            <button class="btn btn-primary btn-sm" onclick="openRoleModal()">+ Новая роль</button>
+          </div>
+          <div class="panel">
+            <div class="panel-header">
+              <div class="panel-title">Список ролей</div>
+              <div style="font-size:11px;color:var(--text3)">Каждая роль = набор доступных разделов</div>
+            </div>
+            <div id="roles-list"></div>
+          </div>
+        </div>
+        <!-- Users column -->
+        <div>
+          <div class="section-header">
+            <div class="section-title">👥 Пользователи</div>
+            <button class="btn btn-primary btn-sm" onclick="openUserModal()">+ Новый пользователь</button>
+          </div>
+          <div class="panel">
+            <div class="table-wrap"><table>
+              <thead><tr>
+                <th>Логин</th><th>Имя</th><th>Роль</th><th>Доступ</th><th>Создан</th><th>Действия</th>
+              </tr></thead>
+              <tbody id="users-table-body"></tbody>
+            </table></div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</main>
+</div>
+
+<!-- ════════════ MODALS ════════════ -->
+
+<!-- Raw -->
+<div class="modal-overlay" id="modal-raw"><div class="modal">
+  <div class="modal-title" id="mraw-title">НОВОЕ СЫРЬЁ</div>
+  <input type="hidden" id="mraw-id">
+  <div class="form-group"><label>Название</label><input id="mraw-name" placeholder="Напр. Мука пшеничная"></div>
+  <div class="form-row">
+    <div class="form-group"><label>Количество</label><input type="number" id="mraw-qty" min="0" step="0.01" placeholder="0"></div>
+    <div class="form-group"><label>Единица</label><select id="mraw-unit"><option>кг</option><option>г</option><option>л</option><option>мл</option><option>шт</option><option>т</option><option>м</option><option>м²</option></select></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Тип/категория</label><input id="mraw-type" placeholder="Зерновые..."></div>
+    <div class="form-group"><label>Мин. остаток</label><input type="number" id="mraw-min" min="0" step="0.01" placeholder="0"></div>
+  </div>
+  <div class="form-group"><label>Описание</label><textarea id="mraw-desc" placeholder="Примечание..."></textarea></div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-raw')">Отмена</button><button class="btn btn-primary" onclick="saveRaw()">Сохранить</button></div>
+</div></div>
+
+<!-- Pkg -->
+<div class="modal-overlay" id="modal-pkg"><div class="modal">
+  <div class="modal-title" id="mpkg-title">НОВАЯ УПАКОВКА</div>
+  <input type="hidden" id="mpkg-id">
+  <div class="form-group"><label>Название</label><input id="mpkg-name" placeholder="Напр. Коробка 30x30"></div>
+  <div class="form-row">
+    <div class="form-group"><label>Количество</label><input type="number" id="mpkg-qty" min="0" placeholder="0"></div>
+    <div class="form-group"><label>Единица</label><select id="mpkg-unit"><option>шт</option><option>рул</option><option>уп</option><option>кг</option><option>м</option><option>м²</option></select></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Тип</label><select id="mpkg-type"><option>Пакет</option><option>Коробка</option><option>Контейнер</option><option>Этикетка</option><option>Лента</option><option>Плёнка</option><option>Другое</option></select></div>
+    <div class="form-group"><label>Мин. остаток</label><input type="number" id="mpkg-min" min="0" placeholder="0"></div>
+  </div>
+  <div class="form-group"><label>Описание</label><textarea id="mpkg-desc" placeholder="Размеры, материал..."></textarea></div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-pkg')">Отмена</button><button class="btn btn-primary" onclick="savePkg()">Сохранить</button></div>
+</div></div>
+
+<!-- Product -->
+<div class="modal-overlay" id="modal-product"><div class="modal modal-lg">
+  <div class="modal-title" id="mprod-title">НОВЫЙ ТОРТ</div>
+  <input type="hidden" id="mprod-id">
+  <div class="form-group"><label>Название</label><input id="mprod-name" placeholder="Торт Наполеон классический"></div>
+  <div class="form-row-3">
+    <div class="form-group"><label>Категория</label><input id="mprod-cat" placeholder="Торты, Пирожные..."></div>
+    <div class="form-group"><label>Цена (₽)</label><input type="number" id="mprod-price" min="0" step="0.01" placeholder="0.00"></div>
+    <div class="form-group"><label>Вес (кг)</label><input type="number" id="mprod-weight" min="0" step="0.01" placeholder="0.00"></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Срок годности (дней)</label><input type="number" id="mprod-shelf" min="0" placeholder="0"></div>
+    <div class="form-group"><label>Точки сбыта</label>
+      <select id="mprod-points"><option value="">— выберите —</option><option value="Магазин">🏪 Магазин</option><option value="Цех">🏭 Цех</option><option value="Опт">📦 Опт</option><option value="Магазин, Цех, Опт">Все точки</option></select>
+    </div>
+  </div>
+  <div class="form-group"><label>Состав / ингредиенты</label><textarea id="mprod-ingredients" placeholder="Мука, сахар, яйца, масло..."></textarea></div>
+  <div class="form-group"><label>Описание</label><textarea id="mprod-desc" placeholder="Описание, особенности..."></textarea></div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-product')">Отмена</button><button class="btn btn-primary" onclick="saveProduct()">Сохранить</button></div>
+</div></div>
+
+<!-- Plan -->
+<div class="modal-overlay" id="modal-plan"><div class="modal">
+  <div class="modal-title">ПЛАН ПРОИЗВОДСТВА</div>
+  <input type="hidden" id="mplan-id">
+  <div class="form-row">
+    <div class="form-group"><label>Дата</label><input type="date" id="mplan-date"></div>
+    <div class="form-group"><label>Количество (план)</label><input type="number" id="mplan-qty" min="0" placeholder="0"></div>
+  </div>
+  <div class="form-group"><label>Продукт</label><select id="mplan-product"></select></div>
+  <div class="form-group"><label>Примечание</label><textarea id="mplan-note" style="min-height:55px"></textarea></div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-plan')">Отмена</button><button class="btn btn-primary" onclick="savePlan()">Сохранить</button></div>
+</div></div>
+
+<!-- Production fact -->
+<div class="modal-overlay" id="modal-production"><div class="modal" style="max-width:370px">
+  <div class="modal-title">ФАКТИЧЕСКИЙ ВЫПУСК</div>
+  <input type="hidden" id="mpf-planid">
+  <div class="form-group"><label>Продукт</label><input id="mpf-product" readonly style="color:var(--text2)"></div>
+  <div class="form-row">
+    <div class="form-group"><label>Дата</label><input type="date" id="mpf-date" readonly style="color:var(--text2)"></div>
+    <div class="form-group"><label>Количество (шт)</label><input type="number" id="mpf-qty" min="0" placeholder="0"></div>
+  </div>
+  <div class="form-group"><label>Примечание</label><textarea id="mpf-note" style="min-height:55px"></textarea></div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-production')">Отмена</button><button class="btn btn-caramel" onclick="saveProduction()">Записать факт</button></div>
+</div></div>
+
+<!-- Calendar event -->
+<div class="modal-overlay" id="modal-event"><div class="modal">
+  <div class="modal-title">ЗАПИСЬ В ЖУРНАЛ</div>
+  <input type="hidden" id="mev-id">
+  <div class="form-row">
+    <div class="form-group"><label>Дата</label><input type="date" id="mev-date"></div>
+    <div class="form-group"><label>Операция</label>
+      <select id="mev-op"><option value="Приход">📥 Приход</option><option value="Расход">📤 Расход</option><option value="Инвентаризация">📋 Инвентаризация</option><option value="Списание">🗑️ Списание</option></select>
+    </div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Категория</label><select id="mev-cat"><option value="Сырьё">🌾 Сырьё</option><option value="Упаковка">📦 Упаковка</option></select></div>
+    <div class="form-group"><label>Позиция</label><select id="mev-item"></select></div>
+  </div>
+  <div class="form-row">
+    <div class="form-group"><label>Количество</label><input type="number" id="mev-qty" min="0" step="0.01" placeholder="0"></div>
+    <div class="form-group"><label>Единица</label><input id="mev-unit" readonly style="color:var(--text3)"></div>
+  </div>
+  <div class="form-group"><label>Примечание</label><textarea id="mev-note" placeholder="Поставщик, причина..."></textarea></div>
+  <div class="form-group">
+    <label>Прикрепить документ</label>
+    <input type="file" id="mev-file-input" accept=".pdf,.docx,.doc,.xlsx,.xls,.jpg,.jpeg,.png,.txt,.zip">
+    <div id="mev-files-list" style="margin-top:7px"></div>
+  </div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-event')">Отмена</button><button class="btn btn-primary" onclick="saveEvent()">Сохранить</button></div>
+</div></div>
+
+<!-- Event detail -->
+<div class="modal-overlay" id="modal-ev-detail"><div class="modal">
+  <div class="modal-title">ДЕТАЛИ ЗАПИСИ</div>
+  <div id="ev-detail-body"></div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-ev-detail')">Закрыть</button></div>
+</div></div>
+
+<!-- Adjust -->
+<div class="modal-overlay" id="modal-adjust"><div class="modal" style="max-width:340px">
+  <div class="modal-title">КОРРЕКТИРОВКА</div>
+  <input type="hidden" id="adj-id"><input type="hidden" id="adj-type">
+  <div class="form-group">
+    <label id="adj-label">Количество</label>
+    <div class="qty-adjust">
+      <div class="qty-btn" onclick="adjDelta(-1)">−</div>
+      <input type="number" id="adj-qty" min="0" step="0.01" style="text-align:center">
+      <div class="qty-btn" onclick="adjDelta(1)">+</div>
+    </div>
+  </div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-adjust')">Отмена</button><button class="btn btn-primary" onclick="saveAdjust()">Обновить</button></div>
+</div></div>
+
+<!-- Request -->
+<div class="modal-overlay" id="modal-request"><div class="modal modal-lg">
+  <div class="modal-title">ЭЛЕКТРОННАЯ ЗАЯВКА</div>
+  <div class="form-row">
+    <div class="form-group"><label>Точка сбыта</label>
+      <select id="mreq-point"><option value="Магазин">🏪 Магазин</option><option value="Опт">📦 Опт</option><option value="Цех">🏭 Цех</option></select>
+    </div>
+    <div class="form-group"><label>Дата</label><input type="date" id="mreq-date"></div>
+  </div>
+  <div class="form-group">
+    <label>Позиции заявки</label>
+    <div id="mreq-items"></div>
+    <button class="btn btn-secondary btn-sm" style="margin-top:7px" onclick="addReqItem()">+ Добавить позицию</button>
+  </div>
+  <div class="form-group"><label>Примечание</label><textarea id="mreq-note" style="min-height:55px" placeholder="Пожелания, сроки..."></textarea></div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-request')">Отмена</button><button class="btn btn-primary" onclick="saveRequest()">Отправить заявку</button></div>
+</div></div>
+
+<!-- Role modal -->
+<div class="modal-overlay" id="modal-role"><div class="modal">
+  <div class="modal-title">НАСТРОЙКА РОЛИ</div>
+  <input type="hidden" id="mrole-id">
+  <div class="form-group"><label>Название роли</label><input id="mrole-name" placeholder="Напр. Мастер цеха"></div>
+  <div class="form-group">
+    <label>Доступные разделы</label>
+    <div class="permission-grid" id="mrole-perms"></div>
+  </div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-role')">Отмена</button><button class="btn btn-primary" onclick="saveRole()">Сохранить роль</button></div>
+</div></div>
+
+<!-- User modal -->
+<div class="modal-overlay" id="modal-user"><div class="modal">
+  <div class="modal-title">ПОЛЬЗОВАТЕЛЬ</div>
+  <input type="hidden" id="muser-id">
+  <div class="form-row">
+    <div class="form-group"><label>Логин</label><input id="muser-uname" placeholder="login123"></div>
+    <div class="form-group"><label>Пароль</label><input type="password" id="muser-pwd" placeholder="Введите пароль"></div>
+  </div>
+  <div class="form-group"><label>Полное имя</label><input id="muser-name" placeholder="Иванов Иван Иванович"></div>
+  <div class="form-group">
+    <label>Роль</label>
+    <select id="muser-role"></select>
+  </div>
+  <div class="form-group">
+    <label>Доступные разделы (из роли)</label>
+    <div id="muser-pages-preview" style="display:flex;flex-wrap:wrap;gap:5px;margin-top:4px;padding:10px;background:var(--cream);border-radius:8px;min-height:36px;border:1.5px solid var(--border)"></div>
+  </div>
+  <div class="modal-actions"><button class="btn btn-secondary" onclick="closeModal('modal-user')">Отмена</button><button class="btn btn-primary" onclick="saveUser()">Сохранить</button></div>
+</div></div>
+
+<!-- PocketBase JS SDK -->
+<script src="https://cdn.jsdelivr.net/npm/pocketbase@0.21.5/dist/pocketbase.umd.js"></script>
+<script src="js/api.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
